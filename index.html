@@ -315,8 +315,19 @@ async function apiGet(){
 }
 async function apiPost(body){
   if(!API){toast('URL API non configurée','error');return null}
-  body.pin=PIN;
-  const r=await fetch(API,{method:'POST',body:JSON.stringify(body)});
+  // Tout en GET pour éviter les problèmes CORS
+  const url=new URL(API);
+  Object.keys(body).forEach(k=>{
+    const v=body[k];
+    if(k==='agents'||k==='ferie'){
+      url.searchParams.set('data',encodeURIComponent(JSON.stringify(v)));
+    } else {
+      url.searchParams.set(k,v);
+    }
+  });
+  url.searchParams.set('pin',PIN);
+  url.searchParams.set('t',Date.now());
+  const r=await fetch(url.toString());
   return r.json();
 }
 
